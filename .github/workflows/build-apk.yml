@@ -26,7 +26,7 @@ jobs:
       - name: Verify and unpack project
         run: unzip -t project.zip && unzip -q project.zip
 
-      - name: Apply tracker v0.4 patches
+      - name: Apply tracker v0.5 patches
         run: |
           tar -xzf patches/v3.tar.gz
           cp patches/v2/tracking/FaceLandmarkerHelper.kt EyeControlAndroid/app/src/main/java/com/dimas/eyecontrol/tracking/FaceLandmarkerHelper.kt
@@ -34,12 +34,12 @@ jobs:
           cp v3patch/tracking/GazeEstimator.kt EyeControlAndroid/app/src/main/java/com/dimas/eyecontrol/tracking/GazeEstimator.kt
           cp v3patch/calibration/CalibrationActivity.kt EyeControlAndroid/app/src/main/java/com/dimas/eyecontrol/calibration/CalibrationActivity.kt
           cp v3patch/app/MainActivity.kt EyeControlAndroid/app/src/main/java/com/dimas/eyecontrol/MainActivity.kt
-          cp patches/v4/tracking/GazeCalibration.kt EyeControlAndroid/app/src/main/java/com/dimas/eyecontrol/tracking/GazeCalibration.kt
-          cp patches/v4/tracking/EyeTrackingService.kt EyeControlAndroid/app/src/main/java/com/dimas/eyecontrol/tracking/EyeTrackingService.kt
+          cp patches/v5/tracking/GazeCalibration.kt EyeControlAndroid/app/src/main/java/com/dimas/eyecontrol/tracking/GazeCalibration.kt
+          cp patches/v5/tracking/EyeTrackingService.kt EyeControlAndroid/app/src/main/java/com/dimas/eyecontrol/tracking/EyeTrackingService.kt
           cp patches/v4/accessibility/EyeAccessibilityService.kt EyeControlAndroid/app/src/main/java/com/dimas/eyecontrol/accessibility/EyeAccessibilityService.kt
           sed -i 's/compileSdk = 35/compileSdk = 36/' EyeControlAndroid/app/build.gradle.kts
-          sed -i 's/versionCode = 1/versionCode = 4/' EyeControlAndroid/app/build.gradle.kts
-          sed -i 's/versionName = "0.1.0"/versionName = "0.4.0"/' EyeControlAndroid/app/build.gradle.kts
+          sed -i 's/versionCode = 1/versionCode = 5/' EyeControlAndroid/app/build.gradle.kts
+          sed -i 's/versionName = "0.1.0"/versionName = "0.5.0"/' EyeControlAndroid/app/build.gradle.kts
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -61,10 +61,10 @@ jobs:
         working-directory: EyeControlAndroid
         run: gradle --no-daemon --stacktrace :app:assembleDebug
 
-      - name: Sign tracker v0.4 APK with stable test key
+      - name: Sign tracker v0.5 APK with stable test key
         run: |
           base64 -d test-signing.jks.b64 > eyecontrol-test-signing.jks
-          cp EyeControlAndroid/app/build/outputs/apk/debug/app-debug.apk EyeControl-v0.4-stable.apk
+          cp EyeControlAndroid/app/build/outputs/apk/debug/app-debug.apk EyeControl-v0.5-relative.apk
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" sign \
             --ks eyecontrol-test-signing.jks \
             --ks-key-alias eyecontrol \
@@ -74,14 +74,14 @@ jobs:
             --v2-signing-enabled true \
             --v3-signing-enabled true \
             --v4-signing-enabled false \
-            EyeControl-v0.4-stable.apk
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs EyeControl-v0.4-stable.apk
-          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging EyeControl-v0.4-stable.apk | head -n 20
+            EyeControl-v0.5-relative.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs EyeControl-v0.5-relative.apk
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging EyeControl-v0.5-relative.apk | head -n 20
 
-      - name: Upload tracker v0.4 APK
+      - name: Upload tracker v0.5 APK
         uses: actions/upload-artifact@v4
         with:
-          name: EyeControl-v0.4-stable-apk
-          path: EyeControl-v0.4-stable.apk
+          name: EyeControl-v0.5-relative-apk
+          path: EyeControl-v0.5-relative.apk
           if-no-files-found: error
           retention-days: 30
