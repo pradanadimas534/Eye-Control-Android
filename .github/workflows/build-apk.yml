@@ -16,6 +16,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Rebuild project archive
+        run: cat project.part00 project.part01 project.part02 project.part03 project.part04 | base64 -d > project.zip
+
       - name: Unpack project
         run: unzip -q project.zip
 
