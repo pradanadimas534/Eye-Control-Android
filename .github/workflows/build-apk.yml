@@ -49,13 +49,38 @@ jobs:
         working-directory: EyeControlAndroid
         run: gradle --no-daemon --stacktrace :app:assembleDebug
 
-      - name: Collect APK
-        run: cp EyeControlAndroid/app/build/outputs/apk/debug/app-debug.apk EyeControl-debug.apk
+      - name: Build compatibility APK
+        run: |
+          keytool -genkeypair -v \
+            -keystore eyecontrol-compat.keystore \
+            -storepass android \
+            -keypass android \
+            -alias eyecontrol \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -dname "CN=EyeControl Debug,O=EyeControl,C=ID"
 
-      - name: Upload APK
+          cp EyeControlAndroid/app/build/outputs/apk/debug/app-debug.apk EyeControl-compatible.apk
+
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" sign \
+            --ks eyecontrol-compat.keystore \
+            --ks-key-alias eyecontrol \
+            --ks-pass pass:android \
+            --key-pass pass:android \
+            --v1-signing-enabled true \
+            --v2-signing-enabled true \
+            --v3-signing-enabled true \
+            --v4-signing-enabled false \
+            EyeControl-compatible.apk
+
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs EyeControl-compatible.apk
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging EyeControl-compatible.apk | head -n 20
+
+      - name: Upload compatibility APK
         uses: actions/upload-artifact@v4
         with:
-          name: EyeControl-debug-apk
-          path: EyeControl-debug.apk
+          name: EyeControl-compatible-apk
+          path: EyeControl-compatible.apk
           if-no-files-found: error
           retention-days: 30
